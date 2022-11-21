@@ -145,7 +145,6 @@ namespace vector_merge3
 
                 int cnt = 1;
 
-                int limit = 100000;
 
                 try
                 {
@@ -177,96 +176,92 @@ namespace vector_merge3
                                 }
                                 else
                                 {
-                                    if (limit > cnt)
+
+                                    string[] stra = line.Split(' ');
+
+                                    stra = stra.Where(str => str != "").ToArray();
+
+                                    //중간에 공백이 하나 더있는 경우
+                                    //if (stra[0].Equals("SQPG"))
+                                    if (Array.IndexOf(stra, "SQPG") >= 0)
                                     {
-                                        string[] stra = line.Split(' ');
+                                        //SQPG 명령어 일 경우 루프 or 패딩 표현해야함
+                                        if (sqpg_cnt > 0)
+                                            sqpg_cnt--;
 
-                                        stra = stra.Where(str => str != "").ToArray();
-
-                                        //중간에 공백이 하나 더있는 경우
-                                        //if (stra[0].Equals("SQPG"))
-                                        if (Array.IndexOf(stra, "SQPG") >= 0)
+                                        if (Array.IndexOf(stra, "RPTV") >= 0)
                                         {
-                                            //SQPG 명령어 일 경우 루프 or 패딩 표현해야함
-                                            if (sqpg_cnt > 0)
-                                                sqpg_cnt--;
-
-                                            if (Array.IndexOf(stra, "RPTV") >= 0)
-                                            {
-                                                special_word.Add(new LineString(
-                                                    sqpg_cnt
-                                                    , "S \t" + stra[stra.Length - 1].ToString()));
-                                            }
-                                            else if (Array.IndexOf(stra, "PADDING") >= 0 || Array.IndexOf(stra, "PADDING;") >= 0)
-                                            {
-                                                special_word.Add(new LineString(sqpg_cnt, "end"));
-                                            }
+                                            special_word.Add(new LineString(
+                                                sqpg_cnt
+                                                , "S \t" + stra[stra.Length - 1].ToString()));
                                         }
-                                        else if (stra[0].Equals("R1"))
+                                        else if (Array.IndexOf(stra, "PADDING") >= 0 || Array.IndexOf(stra, "PADDING;") >= 0)
                                         {
+                                            special_word.Add(new LineString(sqpg_cnt, "end"));
+                                        }
+                                    }
+                                    else if (stra[0].Equals("R1"))
+                                    {
 
-                                            int forcnt = 0;
+                                        int forcnt = 0;
 
-                                            string temp_str = "";
+                                        string temp_str = "";
 
-                                            for (int i2 = 0; i2 < stra.Length; i2++)
+                                        for (int i2 = 0; i2 < stra.Length; i2++)
+                                        {
+                                            if (stra[i2].Length == list_vec.Count())
                                             {
-                                                if (stra[i2].Length == list_vec.Count())
+                                                //데이터 영역
+                                                int fori = 0;
+                                                foreach (char achar in stra[i2])
                                                 {
-                                                    //데이터 영역
-                                                    int fori = 0;
-                                                    foreach (char achar in stra[i2])
-                                                    {
-                                                        list_vec[fori].vec_data.Add(new Vec_data_data(fori, achar));
+                                                    list_vec[fori].vec_data.Add(new Vec_data_data(fori, achar));
 
-                                                        fori++;
-                                                    }
-                                                    break;
+                                                    fori++;
                                                 }
-                                                else
+                                                break;
+                                            }
+                                            else
+                                            {
+
+                                                if (i2 >= 2)
                                                 {
 
-                                                    if (i2 >= 2)
+                                                    if (stra[i2].IndexOf(";") == 0)
                                                     {
-
-                                                        if (stra[i2].IndexOf(";") == 0)
-                                                        {
-                                                            //블링크후 바로";" 일 경우 사용안함
-                                                        }
+                                                        //블링크후 바로";" 일 경우 사용안함
+                                                    }
+                                                    else
+                                                    {
+                                                        if (i2 == stra.Length - 1)
+                                                            temp_str += stra[i2];
                                                         else
                                                         {
-                                                            if (i2 == stra.Length - 1)
-                                                                temp_str += stra[i2];
-                                                            else
-                                                            {
-                                                                temp_str += stra[i2] + " ";
-                                                                removeidx.Add(temp_str.Length - 1);
-                                                            }
-                                                        }
-
-                                                        if (i2 == stra.Length - 1)
-                                                        {
-                                                            int fori = 0;
-                                                            foreach (char achar in temp_str)
-                                                            {
-                                                                list_vec[fori].vec_data.Add(new Vec_data_data(fori, achar));
-
-                                                                fori++;
-                                                            }
+                                                            temp_str += stra[i2] + " ";
+                                                            removeidx.Add(temp_str.Length - 1);
                                                         }
                                                     }
 
+                                                    if (i2 == stra.Length - 1)
+                                                    {
+                                                        int fori = 0;
+                                                        foreach (char achar in temp_str)
+                                                        {
+                                                            list_vec[fori].vec_data.Add(new Vec_data_data(fori, achar));
+
+                                                            fori++;
+                                                        }
+                                                    }
                                                 }
 
-                                                forcnt++;
                                             }
 
+                                            forcnt++;
                                         }
-                                    }
-                                    else
-                                    {
 
                                     }
+
+
                                 }
                             }
                             sqpg_cnt++;
@@ -288,7 +283,7 @@ namespace vector_merge3
 
                     SR.Close();
                 }
-                catch(Exception ex)
+                catch (Exception ex)
                 {
                     MessageBox.Show(ex.Message + "Data Read Error");
                 }
@@ -331,7 +326,7 @@ namespace vector_merge3
                             {
                                 for (int j = 0; j < mergeVeclist.Count; j++)
                                 {
-                                    try 
+                                    try
                                     {
 
                                         if (mergeVeclist[j].vec_name.Equals(totalData[i][k].vec_name))
@@ -348,9 +343,9 @@ namespace vector_merge3
                                             }
                                         }
                                     }
-                                    catch(Exception ex)
+                                    catch (Exception ex)
                                     {
-                                        MessageBox.Show(ex.Message + "i==1 부터 실제로 비교 추가" + i +"/"+ j +"/"+ k);
+                                        MessageBox.Show(ex.Message + "i==1 부터 실제로 비교 추가" + i + "/" + j + "/" + k);
                                     }
                                 }
 
@@ -384,14 +379,14 @@ namespace vector_merge3
                             }
                             catch (Exception ex)
                             {
-                                MessageBox.Show(ex.Message + "이름 결합과 데이터 결합 분리" + i + "/" + " "+ "/" + k);
+                                MessageBox.Show(ex.Message + "이름 결합과 데이터 결합 분리" + i + "/" + " " + "/" + k);
                             }
                             //위에코드는 이전꺼 vec_data채우기+ 새로vec_name만들기
                             //밑에껀 추가한 vec_data추가하기
                         }
-                       
+
                     }
-                    
+
 
                     for (int i = 1; i < totalData.Count; i++)
                     {
@@ -445,7 +440,7 @@ namespace vector_merge3
                                             }
                                         }
                                     }
-                                    catch(Exception ex)
+                                    catch (Exception ex)
                                     {
                                         MessageBox.Show("추가할 데이터를 선별한다+MergeVec에 저장" + i + "/" + j + "/" + k);
                                     }
@@ -454,7 +449,7 @@ namespace vector_merge3
                         }
                         this.Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Background, new Action(() =>
                         {
-                            proWnd.setProgressBar( (int)( ( (double)i / (double)totalData.Count) * (double)100 ), "File Reading" );
+                            proWnd.setProgressBar((int)(((double)i / (double)totalData.Count) * (double)100), "File Reading");
                         }));
 
                         totalData[i].Clear();
@@ -482,7 +477,7 @@ namespace vector_merge3
                     {
                         for (int i = 0; i < mergeVeclist.Count; i++)
                         {
-                            if(i == 0)
+                            if (i == 0)
                             {
                                 //명령어 공백을 만들기 위한 빈칸추가
                                 outputstring.Append("               ");
