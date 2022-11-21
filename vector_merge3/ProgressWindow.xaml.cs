@@ -38,6 +38,12 @@ namespace vector_merge3
                 progressbar.Value = percentage;
 
         }
+        internal void setProgressBar( string txt)
+        {
+
+            progress_text.Content = txt;
+
+        }
 
         private void Window_Closed(object sender, EventArgs e)
         {
