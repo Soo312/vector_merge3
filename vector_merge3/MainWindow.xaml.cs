@@ -295,6 +295,8 @@ namespace vector_merge3
         {
             try
             {
+
+
                 int totalCount = 0;
 
                 this.Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Background, new Action(() =>
@@ -336,11 +338,11 @@ namespace vector_merge3
                     //    }
                     //}
 
-                    for(int i =1;i<totalData.Count; i++)
+                    for (int i = 1; i < totalData.Count; i++)
                     {
                         int max_data_cnt = 0;
 
-                        for(int j = 0; j < totalData[i].Count; j++)
+                        for (int j = 0; j < totalData[i].Count; j++)
                         {
 
                             if (samenamelist.IndexOf(totalData[i][j].vec_name) >= 0)
@@ -361,9 +363,9 @@ namespace vector_merge3
                                 avd.vec_name = (totalData[i][j].vec_name);
                                 avd.vec_data = new List<Vec_data_data>();
 
-                                for(int k=0; k < totalData[0][0].vec_data.Count; k++)
+                                for (int k = 0; k < totalData[0][0].vec_data.Count; k++)
                                 {
-                                    avd.vec_data.Add(new Vec_data_data(0,'X'));
+                                    avd.vec_data.Add(new Vec_data_data(0, 'X'));
                                 }
 
                                 foreach (Vec_data_data avdd in totalData[i][j].vec_data)
@@ -373,22 +375,22 @@ namespace vector_merge3
 
                                 totalData[0].Add(avd);
 
-                                if (max_data_cnt < totalData[0][totalData[0].Count-1].vec_data.Count)
-                                    max_data_cnt = totalData[0][totalData[0].Count-1].vec_data.Count;
+                                if (max_data_cnt < totalData[0][totalData[0].Count - 1].vec_data.Count)
+                                    max_data_cnt = totalData[0][totalData[0].Count - 1].vec_data.Count;
                             }
                         }
                         totalData[i].Clear();
 
-                        for(int f =0; f < totalData[0].Count; f++)
+                        for (int f = 0; f < totalData[0].Count; f++)
                         {
-                            if(totalData[0][f].vec_data.Count < max_data_cnt)
+                            if (totalData[0][f].vec_data.Count < max_data_cnt)
                             {
-                                for(int j=0; j < max_data_cnt - totalData[0][f].vec_data.Count;)
+                                for (int j = 0; j < max_data_cnt - totalData[0][f].vec_data.Count;)
                                 {
                                     totalData[0][f].vec_data.Add(new Vec_data_data(0, 'X'));
                                 }
                             }
-                            else if(totalData[0][f].vec_data.Count > max_data_cnt)
+                            else if (totalData[0][f].vec_data.Count > max_data_cnt)
                             {
                                 //있어선 안됨
                             }
@@ -401,126 +403,140 @@ namespace vector_merge3
                     }
 
                     totalData[0].Sort((name1, name2) => name1.vec_name.CompareTo(name2.vec_name));
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("파일 정렬 " + ex.ToString());
+            }
 
 #if true //stringbuilder사용
+            try
+            {
+                StringBuilder outputstring = new StringBuilder();
+                int size_maxLen = 0;
+                for (int i = 0; i < totalData[0].Count; i++)
+                {
+                    if (totalData[0][i].vec_name.Length > size_maxLen)
+                        size_maxLen = totalData[0][i].vec_name.Length;
+                    //최대이름크기 찾기
+                }
 
-                    StringBuilder outputstring = new StringBuilder();
-                    int size_maxLen = 0;
+                string savepath = @"E:\Work_2022_05_18after\\output\\" + "fix.test";
+
+                //이름 세로로 만들어 넣기
+                for (int j = 0; j < size_maxLen; j++)
+                {
                     for (int i = 0; i < totalData[0].Count; i++)
                     {
-                        if (totalData[0][i].vec_name.Length > size_maxLen)
-                            size_maxLen = totalData[0][i].vec_name.Length;
-                        //최대이름크기 찾기
-                    }
-
-                    string savepath = @"E:\Work_2022_05_18after\\output\\" + "fix.test";
-
-                    //이름 세로로 만들어 넣기
-                    for (int j = 0; j < size_maxLen; j++)
-                    {
-                        for (int i = 0; i < totalData[0].Count; i++)
+                        if (i == 0)
                         {
-                            if (i == 0)
-                            {
-                                //명령어 공백을 만들기 위한 빈칸추가
-                                outputstring.Append("               ");
-                            }
-                            try
-                            {
-                                outputstring.Append(totalData[0][i].vec_name[j] + " ");
-                            }
-                            catch (Exception ex)
-                            {
-                                outputstring.Append("  ");
-                            }
+                            //명령어 공백을 만들기 위한 빈칸추가
+                            outputstring.Append("               ");
                         }
-                        outputstring.Append("\n");
-
-                    }
-
-
-                    int step_cnt = 0;
-
-                    int max_step = (totalData[0][0].vec_data.Count * totalData[0].Count);
-
-                    string outputname = DateTime.Now.ToString("yyyyMMdd_HHmmss");
-                    System.IO.File.WriteAllText(outputname + ".txt", outputstring.ToString());
-
-                    outputstring = new StringBuilder();
-
-                    //데이터 넣기
-
-                    int writecount = 0;
-
-                    for (int j = 0; j < totalData[0][0].vec_data.Count; j++)
-                    {
-                        for (int sp = 0; sp < special_word.Count; sp++)
+                        try
                         {
-                            if (j == special_word[sp].line)
-                            {
-                                outputstring.Append(special_word[sp].linetext + "\n");
-                                //outputstring.Append("   " + "\n");
-                            }
+                            //outputstring.Append(totalData[0][i].vec_name[j]);// + " "); 빈칸 삭제 221221
+                            outputstring.Append(totalData[0][i].vec_name[j]); 
                         }
-                        for (int i = 0; i < totalData[0].Count; i++)
+                        catch (Exception ex)
                         {
-                            if (i == 0)
+                            outputstring.Append(" ");
+                        }
+                    }
+                    outputstring.Append("\n");
+
+                }
+
+
+                int step_cnt = 0;
+
+                int max_step = (totalData[0][0].vec_data.Count * totalData[0].Count);
+
+                string outputname = DateTime.Now.ToString("yyyyMMdd_HHmmss");
+                System.IO.File.WriteAllText(outputname + ".txt", outputstring.ToString());
+
+                outputstring = new StringBuilder();
+
+                //데이터 넣기
+
+                int writecount = 0;
+
+                for (int j = 0; j < totalData[0][0].vec_data.Count; j++)
+                {
+                    for (int sp = 0; sp < special_word.Count; sp++)
+                    {
+                        if (j == special_word[sp].line)
+                        {
+                            outputstring.Append(special_word[sp].linetext + "\n");
+                            //outputstring.Append("   " + "\n");
+                        }
+                    }
+                    for (int i = 0; i < totalData[0].Count; i++)
+                    {
+                        if (i == 0)
+                        {
+                            //명령어 공백을 만들기 위한 빈칸추가
+                            outputstring.Append("               ");
+                        }
+                        char outputchar = totalData[0][i].vec_data[j].data;
+                        try
+                        {
+                            if (ischangetxt)
                             {
-                                //명령어 공백을 만들기 위한 빈칸추가
-                                outputstring.Append("               ");
-                            }
-                            char outputchar = totalData[0][i].vec_data[j].data;
-                            try
-                            {
-                                if (ischangetxt)
+                                if (outputchar.Equals(change_bf_char))
                                 {
-                                    if (outputchar.Equals(change_bf_char))
-                                    {
-                                        outputchar = change_af_char;
-                                    }
+                                    outputchar = change_af_char;
                                 }
-
-                                outputstring.Append(outputchar + " ");
                             }
-                            catch (Exception ex)
-                            {
-                                // outputstring += "  ";
-                                outputstring.Append("  ");
-                            }
-                            step_cnt++;
 
+                            //outputstring.Append(outputchar);// + " "); 221221 빈칸삭제
+
+                            outputstring.Append(outputchar);
                         }
-                        outputstring.Append("\n");
-                        this.Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Background, new Action(() =>
+                        catch (Exception ex)
                         {
-                            proWnd.setProgressBar((int)((double)step_cnt / (double)max_step * (double)100),
-                                step_cnt.ToString() + " / " + max_step.ToString());
-                        }));
-
-                        if (writecount % 10000 == 0 || writecount == totalData[0][0].vec_data.Count - 1)
-                        {
-                            System.IO.File.AppendAllText(outputname + ".txt", outputstring.ToString());
-                            outputstring.Clear();
-
+                            // outputstring += "  ";
+                            outputstring.Append(" ");//("  ");빈칸 삭제
                         }
-                        writecount++;
+                        step_cnt++;
+
                     }
-
-                    //하나출력
-                    //System.IO.File.WriteAllText(OpenPrjPath + "fix", outputstring.ToString());
-                    Thread.Sleep(10);
+                    outputstring.Append("\n");
                     this.Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Background, new Action(() =>
                     {
-                        proWnd.setProgressBar(100,
-                            "Done");
+                        proWnd.setProgressBar((int)((double)step_cnt / (double)max_step * (double)100),
+                            step_cnt.ToString() + " / " + max_step.ToString());
                     }));
 
+                    if (writecount % 10000 == 0 || writecount == totalData[0][0].vec_data.Count - 1)
+                    {
+                        System.IO.File.AppendAllText(outputname + ".txt", outputstring.ToString());
+                        outputstring.Clear();
+
+                    }
+                    writecount++;
+                }
+
+                //하나출력
+                //System.IO.File.WriteAllText(OpenPrjPath + "fix", outputstring.ToString());
+                Thread.Sleep(10);
+                this.Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Background, new Action(() =>
+                {
+                    proWnd.setProgressBar(100,
+                        "Done");
+                }));
 
 
-                    mergeVeclist.Clear();//메모리때문에 빨리지워야함
-                    System.GC.Collect();
 
+                //mergeVeclist.Clear();//메모리때문에 빨리지워야함
+                System.GC.Collect();
 
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("저장 " + ex.ToString());
+            }
 
 #else
             string outputstring = "";
@@ -574,12 +590,6 @@ namespace vector_merge3
             System.IO.File.WriteAllText(OpenPrjPath+"fix", outputstring);
 #endif
 
-                }
-            }
-            catch (ThreadInterruptedException e)
-            {
-                Environment.Exit(0);
-            }
         }
 
         private void btn_textchange_Click(object sender, RoutedEventArgs e)
