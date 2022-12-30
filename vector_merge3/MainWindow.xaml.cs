@@ -42,6 +42,8 @@ namespace vector_merge3
 
         ProgressWindow proWnd;
 
+        List<STRSTR> pinlist = new List<STRSTR>(); // Pin파일로 정렬하는용
+
         public System.Collections.ObjectModel.ObservableCollection<string> listviewItemSource
         {
             get
@@ -316,6 +318,8 @@ namespace vector_merge3
                             samenamelist.Add(totalData[i][j].vec_name);
                         }
                     }
+
+
                 }
 
                 if (listviewItemSource.Count > 0)
@@ -378,8 +382,39 @@ namespace vector_merge3
                                 if (max_data_cnt < totalData[0][totalData[0].Count - 1].vec_data.Count)
                                     max_data_cnt = totalData[0][totalData[0].Count - 1].vec_data.Count;
                             }
+
+                            
+                            switch()
+                            {
+                                case 0:
+
+                                    this.Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Background, new Action(() =>
+                                    {
+                                        proWnd.setProgressBar("File Loading.");
+                                    }));
+                                    break;
+                                case 1:
+
+                                    this.Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Background, new Action(() =>
+                                    {
+                                        proWnd.setProgressBar("File Loading..");
+                                    }));
+                                    break;
+                                case 2:
+
+                                    this.Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Background, new Action(() =>
+                                    {
+                                        proWnd.setProgressBar("File Loading...");
+                                    }));
+                                    break;
+                                default:break;
+                            }
+                            this.Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Background, new Action(() =>
+                            {
+                                proWnd.setProgressBar("File Loading...");
+                            }));
                         }
-                        totalData[i].Clear();
+                        //totalData[i].Clear();
 
                         for (int f = 0; f < totalData[0].Count; f++)
                         {
@@ -649,16 +684,242 @@ namespace vector_merge3
             }
             Logoutput("[" + DateTime.Now.ToString("yyMMdd_HHmmss") + "]  " + "Save Done");
 
-            btn_clear_Click(null, null);
+            //btn_clear_Click(null, null);
+        }
+
+        private void TestButton_Click(object sender, RoutedEventArgs e)
+        {
+            CommonOpenFileDialog cofd = new CommonOpenFileDialog();
+
+
+            cofd.Multiselect = false;
+
+            if (cofd.ShowDialog() == CommonFileDialogResult.Ok)
+            {
+                //OpenPrjPath = cofd.FileNames;
+                Logoutput("[" + DateTime.Now.ToString("yyMMdd_HHmmss") + "]  " + "TestButton On");
+
+                string pinpath = cofd.FileName;
+
+                if(pinpath != null)
+                {
+                    StreamReader streamreader = new StreamReader(pinpath);
+
+                    string pinstr = streamreader.ReadToEnd();
+
+                    string[] stringSeparators = new string[] { "\r\n" };
+                    string[] strarr = pinstr.Split(stringSeparators, StringSplitOptions.None);
+
+
+
+                    for (int i = 0; i < strarr.Count(); i++)
+                    {
+                        strarr[i] = strarr[i].Trim();
+                        STRSTR apinname = new STRSTR();
+
+                        string[] partsstr = strarr[i].Split(' ');
+
+                        if (string.IsNullOrWhiteSpace(partsstr[0]))
+                        {
+                            continue;
+                        }
+                        else
+                        {
+                            apinname.str_number = partsstr[0];
+                            apinname.str_name = partsstr[partsstr.Length - 1];
+                        }
+
+                        pinlist.Add(apinname);
+
+                    }
+
+                    List<VectorData> pinsortData = new List<VectorData>();
+
+                    for (int i=0;i<pinlist.Count; i++)
+                    {
+                        VectorData tempvecdata = new VectorData();
+
+                        for(int j=0; j < totalData[0].Count; j++)
+                        {
+                            if (pinlist[i].str_name.Equals(totalData[0][j].vec_name))
+                            {
+                                //비교해서 같음
+                                tempvecdata.vec_name = pinlist[i].str_name;
+
+                                tempvecdata.vec_data = new List<Vec_data_data>();
+
+                                for (int k = 0; k < totalData.Count; k++)
+                                {
+                                    tempvecdata.vec_data.AddRange(totalData[k][j].vec_data);
+                                }
+                                //한번이라도 같으면 동일한것 탈출
+                                break;
+                            }
+                            else
+                            {
+                                //비교해서 다름
+                                if (j == totalData[0].Count - 1)
+                                {
+                                    //끝까지 비교해도 다름? 같음?
+                                    tempvecdata.vec_name = pinlist[i].str_name;
+
+                                    tempvecdata.vec_data = new List<Vec_data_data>();
+
+                                    int datalength = 0;
+                                    for (int ta = 0; ta < totalData.Count; ta++)
+                                    {
+                                        datalength += totalData[ta][0].vec_data.Count;
+                                    }
+                                    for (int k = 0; k < datalength; k++)
+                                    {
+                                        Vec_data_data temp_vdd = new Vec_data_data();
+                                        temp_vdd.data = '.';
+                                        tempvecdata.vec_data.Add(temp_vdd);
+                                    }
+                                }
+                            }
+
+                        }
+
+                        pinsortData.Add(tempvecdata);
+
+                    }
+
+                    string outputname = DateTime.Now.ToString("yyyyMMdd_HHmmss");
+
+                    StringBuilder outputstring = new StringBuilder();
+
+                    System.IO.File.AppendAllText(outputname + ".pin", outputstring.ToString());
+
+
+                    //이름 넣기
+                    int size_maxLen = 0;
+                    for (int i = 0; i < pinsortData.Count; i++)
+                    {
+                        if (pinsortData[i].vec_name.Length > size_maxLen)
+                            size_maxLen = pinsortData[i].vec_name.Length;
+                        //최대이름크기 찾기
+                    }
+
+                    //이름 세로로 만들어 넣기
+                    for (int j = 0; j < size_maxLen; j++)
+                    {
+                        for (int i = 0; i < pinsortData.Count; i++)
+                        {
+                            if (i == 0)
+                            {
+                                //명령어 공백을 만들기 위한 빈칸추가
+                                outputstring.Append("               ");
+                            }
+                            try
+                            {
+                                //outputstring.Append(totalData[0][i].vec_name[j]);// + " "); 빈칸 삭제 221221
+                                outputstring.Append(pinsortData[i].vec_name[j]);
+                            }
+                            catch (Exception ex)
+                            {
+                                outputstring.Append(" ");
+                            }
+                        }
+                        outputstring.Append("\n");
+                    }
+
+                    int step_cnt = 0;
+
+                    int max_step = (pinsortData.Count);
+
+
+                    System.IO.File.WriteAllText(outputname + ".pin", outputstring.ToString());
+
+                    outputstring = new StringBuilder();
+
+                    //데이터 넣기
+
+                    int writecount = 0;
+
+                    for (int j = 0; j < pinsortData[0].vec_data.Count; j++)
+                    {
+                        for (int sp = 0; sp < special_word.Count; sp++)
+                        {
+                            if (j == special_word[sp].line)
+                            {
+                                outputstring.Append(special_word[sp].linetext + "\n");
+                                //outputstring.Append("   " + "\n");
+                            }
+                        }
+                        for (int i = 0; i < pinsortData.Count; i++)
+                        {
+                            if (i == 0)
+                            {
+                                //명령어 공백을 만들기 위한 빈칸추가
+                                outputstring.Append("               ");
+                            }
+                            char outputchar = pinsortData[i].vec_data[j].data;
+                            try
+                            {
+                                if (ischangetxt)
+                                {
+                                    if (outputchar.Equals(change_bf_char))
+                                    {
+                                        outputchar = change_af_char;
+                                    }
+                                }
+
+                                //outputstring.Append(outputchar);// + " "); 221221 빈칸삭제
+
+                                outputstring.Append(outputchar);
+                            }
+                            catch (Exception ex)
+                            {
+                                // outputstring += "  ";
+                                outputstring.Append(" ");//("  ");빈칸 삭제
+                            }
+                            step_cnt++;
+
+                        }
+                        outputstring.Append("\n");
+                        //this.Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Background, new Action(() =>
+                        //{
+                        //     proWnd.setProgressBar((int)((double)step_cnt / (double)max_step * (double)100),
+                        //        step_cnt.ToString() + " / " + max_step.ToString());
+                        //}));
+
+                        if (writecount % 10000 == 0 || writecount == totalData[0][0].vec_data.Count - 1)
+                        {
+                            System.IO.File.AppendAllText(outputname + ".pin", outputstring.ToString());
+                            outputstring.Clear();
+
+                        }
+                        writecount++;
+                    }
+
+                    //하나출력
+                    //System.IO.File.WriteAllText(OpenPrjPath + "fix", outputstring.ToString());
+                    //Thread.Sleep(10);
+                    //this.Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Background, new Action(() =>
+                    //{
+                    //    proWnd.setProgressBar(100,
+                    //        "Done");
+                    //}));
+
+
+                }
+            }
+        }
+
+        struct STRSTR
+        {
+            public string str_number;
+            public string str_name;
         }
 
         private void btn_clear_Click(object sender, RoutedEventArgs e)
         {
-            _listviewItemSource.Clear();
+            //_listviewItemSource.Clear();
 
-            totalData = new List<List<VectorData>>();
+            //totalData = new List<List<VectorData>>();
 
-            OpenPrjPath = "";
+            //OpenPrjPath = "";
 
             special_word.Clear();
 
