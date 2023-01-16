@@ -23,6 +23,10 @@ namespace vector_merge3
         public ProgressWindow()
         {
             InitializeComponent();
+
+
+            progress_text.Content = "Loading";
+            progressbar.Value = 0;
         }
 
         private void Button_Click(object sender, RoutedEventArgs e)

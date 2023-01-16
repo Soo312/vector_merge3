@@ -39,8 +39,10 @@ namespace vector_merge3
         bool ischangetxt = false;
 
         char change_bf_char = ' ', change_af_char = ' ';
+        List<char> change_bf_chararr = new List<char>(), change_af_chararr = new List<char>();
 
         ProgressWindow proWnd;
+        ProgressWindow proWnd2;
 
         List<STRSTR> pinlist = new List<STRSTR>(); // Pin파일로 정렬하는용
 
@@ -383,8 +385,8 @@ namespace vector_merge3
                                     max_data_cnt = totalData[0][totalData[0].Count - 1].vec_data.Count;
                             }
 
-                            
-                            switch()
+                            /*
+                            switch(j%300)
                             {
                                 case 0:
 
@@ -409,10 +411,28 @@ namespace vector_merge3
                                     break;
                                 default:break;
                             }
-                            this.Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Background, new Action(() =>
+                            */
+                            if (j % 100 < 30)
                             {
-                                proWnd.setProgressBar("File Loading...");
-                            }));
+                                this.Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Background, new Action(() =>
+                                {
+                                    proWnd.setProgressBar("File Loading.");
+                                }));
+                            }
+                            else if (j % 100 < 60)
+                            {
+                                this.Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Background, new Action(() =>
+                                {
+                                    proWnd.setProgressBar("File Loading..");
+                                }));
+                            }
+                            else
+                            {
+                                this.Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Background, new Action(() =>
+                                {
+                                    proWnd.setProgressBar("File Loading...");
+                                }));
+                            }
                         }
                         //totalData[i].Clear();
 
@@ -432,6 +452,28 @@ namespace vector_merge3
                             else
                             {
                                 //정상
+                            }
+
+                            if (f % 100 < 30)
+                            {
+                                this.Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Background, new Action(() =>
+                                {
+                                    proWnd.setProgressBar("File Loading.");
+                                }));
+                            }
+                            else if (f % 100 < 60)
+                            {
+                                this.Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Background, new Action(() =>
+                                {
+                                    proWnd.setProgressBar("File Loading..");
+                                }));
+                            }
+                            else
+                            {
+                                this.Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Background, new Action(() =>
+                                {
+                                    proWnd.setProgressBar("File Loading...");
+                                }));
                             }
                         }
 
@@ -458,6 +500,8 @@ namespace vector_merge3
                 }
 
                 string savepath = @"E:\Work_2022_05_18after\\output\\" + "fix.test";
+
+
 
                 //이름 세로로 만들어 넣기
                 for (int j = 0; j < size_maxLen; j++)
@@ -497,7 +541,7 @@ namespace vector_merge3
 
                 int writecount = 0;
 
-                for (int j = 0; j < totalData[0][0].vec_data.Count; j++)
+                for (  int j = 0; j < totalData[0][0].vec_data.Count; j++)
                 {
                     for (int sp = 0; sp < special_word.Count; sp++)
                     {
@@ -519,9 +563,19 @@ namespace vector_merge3
                         {
                             if (ischangetxt)
                             {
-                                if (outputchar.Equals(change_bf_char))
+                                //if (outputchar.Equals(change_bf_char))
+                                //{
+                                //    outputchar = change_af_char;
+                                //}
+
+                                if(change_bf_chararr.Count > 0)
                                 {
-                                    outputchar = change_af_char;
+                                    //변경할게 있다는것
+                                    int changeidx = change_bf_chararr.IndexOf(outputchar);
+                                    if(changeidx != -1)
+                                    {
+                                        outputchar = change_af_chararr[changeidx];
+                                    }
                                 }
                             }
 
@@ -637,6 +691,20 @@ namespace vector_merge3
                 btn_textchange.Content = "적용중";
                 btn_textchange.Background = Brushes.OrangeRed;
                 ischangetxt = true;
+
+                string[] strarr0 = tb_change_bf.Text.Split(' ');
+                string[] strarr1 = tb_change_af.Text.Split(' ');
+
+                for(int i=0;i<strarr0.Length;i++)
+                {
+                    change_bf_chararr.Add(strarr0[i][0]);
+                }
+                for (int i = 0; i < strarr0.Length; i++)
+                {
+                    change_af_chararr.Add(strarr1[i][0]);
+                }
+
+
                 change_bf_char = tb_change_bf.Text[0];
                 change_af_char = tb_change_af.Text[0];
 
@@ -647,6 +715,9 @@ namespace vector_merge3
                 btn_textchange.Content = "적용";
                 btn_textchange.Background = Brushes.LightGreen;
                 ischangetxt = false;
+
+                change_af_chararr.Clear();
+                change_bf_chararr.Clear();
                 Logoutput("[" + DateTime.Now.ToString("yyMMdd_HHmmss") + "]  " + "unset_textChange");
             }
 
@@ -663,6 +734,9 @@ namespace vector_merge3
         bool first_doing = false;
         private void SaveButton_Click(object sender, RoutedEventArgs e)
         {
+
+            proWnd = new ProgressWindow();
+
             Thread mkdata_and_save = new Thread(() => Make_and_Save());
 
             first_doing = true;
@@ -670,7 +744,7 @@ namespace vector_merge3
 
             mkdata_and_save.IsBackground = false;
 
-            proWnd = new ProgressWindow();
+
 
             if (proWnd.ShowDialog() ?? false)
             {
@@ -687,22 +761,44 @@ namespace vector_merge3
             //btn_clear_Click(null, null);
         }
 
+        List<VectorData> pinsortData = new List<VectorData>();
+
         private void TestButton_Click(object sender, RoutedEventArgs e)
         {
             CommonOpenFileDialog cofd = new CommonOpenFileDialog();
 
+            pinsortData.Clear();
 
             cofd.Multiselect = false;
+
+
+            proWnd2 = new ProgressWindow();
+
+            proWnd2.setProgressBar(0, "Pin Sort Start");
+
+
+
+
 
             if (cofd.ShowDialog() == CommonFileDialogResult.Ok)
             {
                 //OpenPrjPath = cofd.FileNames;
-                Logoutput("[" + DateTime.Now.ToString("yyMMdd_HHmmss") + "]  " + "TestButton On");
+                Logoutput("[" + DateTime.Now.ToString("yyMMdd_HHmmss") + "]  " + "Use Pin File Save Done");
 
                 string pinpath = cofd.FileName;
 
-                if(pinpath != null)
+                if (pinpath != null)
                 {
+                    pinlist.Clear();
+
+                    //230116 0번핀 name : - 
+                    //data : . 추가
+                    STRSTR tempstrstr = new STRSTR();
+                    tempstrstr.str_number = "0";
+                    tempstrstr.str_name = "-";
+                    pinlist.Add(tempstrstr);
+                    //여기까지
+
                     StreamReader streamreader = new StreamReader(pinpath);
 
                     string pinstr = streamreader.ReadToEnd();
@@ -733,13 +829,13 @@ namespace vector_merge3
 
                     }
 
-                    List<VectorData> pinsortData = new List<VectorData>();
 
-                    for (int i=0;i<pinlist.Count; i++)
+
+                    for (int i = 0; i < pinlist.Count; i++)
                     {
                         VectorData tempvecdata = new VectorData();
 
-                        for(int j=0; j < totalData[0].Count; j++)
+                        for (int j = 0; j < totalData[0].Count; j++)
                         {
                             if (pinlist[i].str_name.Equals(totalData[0][j].vec_name))
                             {
@@ -748,10 +844,13 @@ namespace vector_merge3
 
                                 tempvecdata.vec_data = new List<Vec_data_data>();
 
-                                for (int k = 0; k < totalData.Count; k++)
-                                {
-                                    tempvecdata.vec_data.AddRange(totalData[k][j].vec_data);
-                                }
+                                //여기서 문제발생 totalData[0]에다 다박아놓은 데이터가있어서 문제발생
+                                //for (int k = 0; k < totalData.Count; k++)
+                                //{
+                                //    tempvecdata.vec_data.AddRange(totalData[k][j].vec_data);
+                                //}
+
+                                tempvecdata.vec_data.AddRange(totalData[0][j].vec_data);
                                 //한번이라도 같으면 동일한것 탈출
                                 break;
                             }
@@ -766,10 +865,13 @@ namespace vector_merge3
                                     tempvecdata.vec_data = new List<Vec_data_data>();
 
                                     int datalength = 0;
-                                    for (int ta = 0; ta < totalData.Count; ta++)
-                                    {
-                                        datalength += totalData[ta][0].vec_data.Count;
-                                    }
+                                    //어짜피 totalData[0]이 다가지고있음 nomal Save 함했으면
+                                    //for (int ta = 0; ta < totalData.Count; ta++)
+                                    //{
+                                    //    datalength += totalData[ta][0].vec_data.Count;
+                                    //}
+
+                                    datalength = totalData[0][0].vec_data.Count;
                                     for (int k = 0; k < datalength; k++)
                                     {
                                         Vec_data_data temp_vdd = new Vec_data_data();
@@ -784,13 +886,47 @@ namespace vector_merge3
                         pinsortData.Add(tempvecdata);
 
                     }
+                }
+                Thread mkdata_and_save = new Thread(() => PinSort_Make());
 
+                first_doing = true;
+                mkdata_and_save.Start();
+
+                mkdata_and_save.IsBackground = false;
+
+
+                if (proWnd2.ShowDialog() ?? false)
+                {
+
+                }
+                else
+                {
+                    //mkdata_and_save.Interrupt();
+                    mkdata_and_save.Abort();
+
+                    proWnd2.Close();
+
+                }
+            }
+            
+        }
+
+        private void PinSort_Make()
+        {
+            {
+                {
+                    
                     string outputname = DateTime.Now.ToString("yyyyMMdd_HHmmss");
 
                     StringBuilder outputstring = new StringBuilder();
 
                     System.IO.File.AppendAllText(outputname + ".pin", outputstring.ToString());
 
+                    delayUs(200);
+                    this.Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Background, new Action(() =>
+                    {
+                        proWnd2.setProgressBar(0, "Text Sort ...");
+                    }));
 
                     //이름 넣기
                     int size_maxLen = 0;
@@ -809,7 +945,9 @@ namespace vector_merge3
                             if (i == 0)
                             {
                                 //명령어 공백을 만들기 위한 빈칸추가
-                                outputstring.Append("               ");
+                                //outputstring.Append("                  ");//이전크기
+
+                                outputstring.Append("                                                   ");
                             }
                             try
                             {
@@ -823,10 +961,12 @@ namespace vector_merge3
                         }
                         outputstring.Append("\n");
                     }
+                    //이름과 vec 사이 띄우기
+                    outputstring.Append("\n");
 
                     int step_cnt = 0;
 
-                    int max_step = (pinsortData.Count);
+                    int max_step = (pinsortData[0].vec_data.Count * pinsortData.Count );
 
 
                     System.IO.File.WriteAllText(outputname + ".pin", outputstring.ToString());
@@ -837,13 +977,245 @@ namespace vector_merge3
 
                     int writecount = 0;
 
+                    int loopcnt = 0;
+
                     for (int j = 0; j < pinsortData[0].vec_data.Count; j++)
                     {
                         for (int sp = 0; sp < special_word.Count; sp++)
                         {
                             if (j == special_word[sp].line)
                             {
-                                outputstring.Append(special_word[sp].linetext + "\n");
+                                if (special_word[sp].linetext.Equals("end"))
+                                {
+                                    if(writecount % 10000 == 0)
+                                    {
+                                        //이미 저장된것
+                                        //저장된거에 한줄 지우고 다시저장해야함
+                                        //특수변경
+
+                                        string[] arrLine = File.ReadAllLines(outputname+".pin", Encoding.Default);
+                                        string replacestr = arrLine[arrLine.Length - 1];
+
+                                        replacestr = replacestr.Replace("ADV", "JNIO LOOP" + loopcnt);
+                                        File.WriteAllLines(outputname + ".pin", arrLine, Encoding.Default);
+                                    }
+                                    else
+                                    {
+                                        //일반 변경
+
+                                        string outputstr = outputstring.ToString();
+                                        int changeidx = outputstr.LastIndexOf("ADV");
+                                        if (changeidx == -1)
+                                            continue;
+                                        outputstr = outputstr.Insert(changeidx, "JNIO");
+                                        outputstr = outputstr.Remove(changeidx + 4, 4);
+
+                                        string insertstr = "LOOP" + loopcnt.ToString();
+                                        outputstr = outputstr.Insert(changeidx + 4 + 1, insertstr);
+                                        outputstr = outputstr.Remove(changeidx + 4 + 1 + insertstr.Length, insertstr.Length);
+
+                                        outputstring.Clear();
+                                        outputstring.Append(outputstr);
+
+                                    }
+                                    loopcnt++;
+                                }
+                                else
+                                {
+                                    int isloopint = 0;
+
+                                    string[] arrstr = special_word[sp].linetext.Trim().Split(' ');
+                                    //specialword 는 end 아니면 s임
+                                    if (j == 0)
+                                    {
+                                        //0이면 무조건 시작 loop일때(s 50 이런걸로 시작)
+
+                                        isloopint = 1;
+                                        //end와 loop(s)의 시작이 같을경우
+                                        int lpcnt = special_word[sp + 1].line - special_word[sp].line;
+                                        for (int ii = 0; ii < lpcnt; ii++)
+                                        {
+
+                                            for (int i = 0; i < pinsortData.Count; i++)
+                                            {
+                                                if (i == 0)
+                                                {
+
+                                                    if (ii == lpcnt - 1)
+                                                    {
+                                                        outputstring.Append("  LIO");
+
+                                                        string insertstr = arrstr[arrstr.Length - 1].Replace("\t", " ").Replace(";", "");
+
+                                                        insertstr = insertstr.Trim();
+                                                        int tempint = 0;
+                                                        int.TryParse(insertstr, out tempint);
+                                                        tempint = tempint - isloopint;
+                                                        insertstr = " " + tempint.ToString();
+
+                                                        int numleng = insertstr.Length;
+
+                                                        outputstring.Append(insertstr);
+
+                                                        for(int testi = 0; testi < 10 - numleng; testi++)
+                                                        {
+                                                            outputstring.Append(" ");
+                                                        }
+                                                        outputstring.Append(" % .. 110 ................ ... 0 1  ");
+
+                                                    }
+                                                    else
+                                                        //명령어 공백을 만들기 위한 빈칸추가
+                                                        outputstring.Append("  ADV           % .. 110 ................ ... 0 1  ");//빈칸 2 + 8 + % + 빈칸1
+                                                }
+                                                char outputchar = pinsortData[i].vec_data[j + ii].data;
+                                                try
+                                                {
+                                                    if (ischangetxt)
+                                                    {
+                                                        if (change_bf_chararr.Count > 0)
+                                                        {
+                                                            //변경할게 있다는것
+                                                            int changeidx = change_bf_chararr.IndexOf(outputchar);
+                                                            if (changeidx != -1)
+                                                            {
+                                                                outputchar = change_af_chararr[changeidx];
+                                                            }
+                                                        }
+                                                    }
+
+                                                    //outputstring.Append(outputchar);// + " "); 221221 빈칸삭제
+
+                                                    outputstring.Append(outputchar);
+                                                }
+                                                catch (Exception ex)
+                                                {
+                                                    // outputstring += "  ";
+                                                    outputstring.Append(" ");//("  ");빈칸 삭제
+                                                }
+                                                step_cnt++;
+
+
+                                            }
+                                            outputstring.Append("\n");
+
+                                        }
+                                    }
+                                    else if(special_word[sp].line == special_word[sp-1].line)
+                                    {
+                                        isloopint = 1;
+                                        //end와 loop(s)의 시작이 같을경우
+                                        int lpcnt = special_word[sp + 1].line - special_word[sp].line;
+                                        for (int ii = 0; ii < lpcnt; ii++)
+                                        {
+
+                                            for (int i = 0; i < pinsortData.Count; i++)
+                                            {
+                                                if (i == 0)
+                                                {                                                     
+                                                    //명령어 공백을 만들기 위한 빈칸추가
+                                                    outputstring.Append("  ADV           % .. 110 ................ ... 0 1  ");
+                                                }
+                                                char outputchar = pinsortData[i].vec_data[j + ii].data;
+                                                try
+                                                {
+                                                    if (ischangetxt)
+                                                    {
+                                                        if (change_bf_chararr.Count > 0)
+                                                        {
+                                                            //변경할게 있다는것
+                                                            int changeidx = change_bf_chararr.IndexOf(outputchar);
+                                                            if (changeidx != -1)
+                                                            {
+                                                                outputchar = change_af_chararr[changeidx];
+                                                            }
+                                                        }
+                                                    }
+
+                                                    //outputstring.Append(outputchar);// + " "); 221221 빈칸삭제
+
+                                                    outputstring.Append(outputchar);
+                                                }
+                                                catch (Exception ex)
+                                                {
+                                                    // outputstring += "  ";
+                                                    outputstring.Append(" ");//("  ");빈칸 삭제
+                                                }
+                                                step_cnt++;
+
+
+                                            }
+                                            outputstring.Append("\n");
+
+                                        }
+
+                                        
+                                    }
+                                    
+                                    if (arrstr[0].Equals("S"))
+                                    {
+
+                                        string tempstr = "LOOP" + loopcnt+":";
+                                        int tempstrlen = 51 - tempstr.Length;
+
+                                        if(tempstrlen > 0)
+                                        {
+                                            for(int i =0; i < tempstrlen+pinsortData.Count; i++)
+                                            {
+                                                tempstr += " ";
+                                            }
+                                        }
+                                        outputstring.Append(tempstr+"\n");
+                                    }
+
+                                    if (writecount % 10000 == 0)
+                                    {
+                                        //이미 저장된것
+                                        //저장된거에 한줄 지우고 다시저장해야함
+                                        //특수변경
+
+                                        string[] arrLine = File.ReadAllLines(outputname + ".pin", Encoding.Default);
+                                        string replacestr = arrLine[arrLine.Length - 1];
+
+                                        string temp = arrstr[arrstr.Length - 1].Replace("\t", " ").Replace(";","");
+                                        temp = temp.Trim();
+                                        int tempint = 0;
+                                        int.TryParse(temp,out tempint);
+                                        tempint = tempint - isloopint;
+
+                                        replacestr = replacestr.Replace("ADV", "LIO " + tempint.ToString());
+                                        File.WriteAllLines(outputname + ".pin", arrLine, Encoding.Default);
+
+                                    }
+                                    else
+                                    {
+                                        //일반 변경
+
+                                        string outputstr = outputstring.ToString();
+                                        int changeidx = outputstr.LastIndexOf("ADV");
+                                        if (changeidx == -1)
+                                            continue;
+                                        outputstr = outputstr.Insert(changeidx, "LIO");
+                                        outputstr = outputstr.Remove(changeidx + 3, 3);
+
+                                        string insertstr = arrstr[arrstr.Length - 1].Replace("\t", " ").Replace(";", "");
+
+                                        insertstr = insertstr.Trim();
+                                        int tempint = 0;
+                                        int.TryParse(insertstr, out tempint);
+                                        tempint = tempint - isloopint;
+                                        insertstr = " "+tempint.ToString();
+
+                                        outputstr = outputstr.Insert(changeidx +3 + 1, insertstr);
+                                        outputstr = outputstr.Remove(changeidx +3 + 1 +insertstr.Length, insertstr.Length);
+
+                                        outputstring.Clear();
+                                        outputstring.Append(outputstr);
+                                    }
+
+
+                                }
+                                //outputstring.Append(special_word[sp].linetext + "\n");
                                 //outputstring.Append("   " + "\n");
                             }
                         }
@@ -852,16 +1224,21 @@ namespace vector_merge3
                             if (i == 0)
                             {
                                 //명령어 공백을 만들기 위한 빈칸추가
-                                outputstring.Append("               ");
+                                outputstring.Append("  ADV           % .. 110 ................ ... 0 1  ");
                             }
                             char outputchar = pinsortData[i].vec_data[j].data;
                             try
                             {
                                 if (ischangetxt)
                                 {
-                                    if (outputchar.Equals(change_bf_char))
+                                    if (change_bf_chararr.Count > 0)
                                     {
-                                        outputchar = change_af_char;
+                                        //변경할게 있다는것
+                                        int changeidx = change_bf_chararr.IndexOf(outputchar);
+                                        if (changeidx != -1)
+                                        {
+                                            outputchar = change_af_chararr[changeidx];
+                                        }
                                     }
                                 }
 
@@ -876,13 +1253,10 @@ namespace vector_merge3
                             }
                             step_cnt++;
 
+                            
                         }
                         outputstring.Append("\n");
-                        //this.Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Background, new Action(() =>
-                        //{
-                        //     proWnd.setProgressBar((int)((double)step_cnt / (double)max_step * (double)100),
-                        //        step_cnt.ToString() + " / " + max_step.ToString());
-                        //}));
+
 
                         if (writecount % 10000 == 0 || writecount == totalData[0][0].vec_data.Count - 1)
                         {
@@ -891,6 +1265,13 @@ namespace vector_merge3
 
                         }
                         writecount++;
+                        this.Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Background, new Action(() =>
+                        {
+                            proWnd2.setProgressBar((int)((double)step_cnt / (double)max_step * (double)100),
+                                step_cnt.ToString() + " / " + max_step.ToString());
+                        }));
+                        delayUs(200);
+
                     }
 
                     //하나출력
@@ -898,7 +1279,7 @@ namespace vector_merge3
                     //Thread.Sleep(10);
                     //this.Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Background, new Action(() =>
                     //{
-                    //    proWnd.setProgressBar(100,
+                    //    proWnd2.setProgressBar(100,
                     //        "Done");
                     //}));
 
@@ -915,18 +1296,28 @@ namespace vector_merge3
 
         private void btn_clear_Click(object sender, RoutedEventArgs e)
         {
-            //_listviewItemSource.Clear();
+            _listviewItemSource.Clear();
 
-            //totalData = new List<List<VectorData>>();
+            totalData = new List<List<VectorData>>();
 
-            //OpenPrjPath = "";
+            OpenPrjPath = "";
 
             special_word.Clear();
 
             proWnd = new ProgressWindow();
 
+            proWnd2 = new ProgressWindow();
+
             System.GC.Collect();
         }
+        void delayUs(long us)
+        {
+            //Stopwatch 초기화 후 시간 측정 시작
+            Stopwatch startNew = Stopwatch.StartNew();
+            //설정한 us를 비교에 쓰일 Tick값으로 변환
+            long usDelayTick = (us * Stopwatch.Frequency) / 1000000;
+            //변환된 Tick값보다 클때까지 대기 
+            while (startNew.ElapsedTicks < usDelayTick) ;
+        }
     }
-
 }
