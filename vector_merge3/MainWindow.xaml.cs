@@ -996,7 +996,7 @@ namespace vector_merge3
                                         string[] arrLine = File.ReadAllLines(outputname+".pin", Encoding.Default);
                                         string replacestr = arrLine[arrLine.Length - 1];
 
-                                        replacestr = replacestr.Replace("ADV", "JNIO LOOP" + loopcnt);
+                                        replacestr = replacestr.Replace("ADV", "JNI0 LOOP" + loopcnt);
                                         File.WriteAllLines(outputname + ".pin", arrLine, Encoding.Default);
                                     }
                                     else
@@ -1007,7 +1007,7 @@ namespace vector_merge3
                                         int changeidx = outputstr.LastIndexOf("ADV");
                                         if (changeidx == -1)
                                             continue;
-                                        outputstr = outputstr.Insert(changeidx, "JNIO");
+                                        outputstr = outputstr.Insert(changeidx, "JNI0");
                                         outputstr = outputstr.Remove(changeidx + 4, 4);
 
                                         string insertstr = "LOOP" + loopcnt.ToString();
@@ -1043,7 +1043,7 @@ namespace vector_merge3
 
                                                     if (ii == lpcnt - 1)
                                                     {
-                                                        outputstring.Append("  LIO");
+                                                        outputstring.Append("  LI0");
 
                                                         string insertstr = arrstr[arrstr.Length - 1].Replace("\t", " ").Replace(";", "");
 
@@ -1183,7 +1183,7 @@ namespace vector_merge3
                                         int.TryParse(temp,out tempint);
                                         tempint = tempint - isloopint;
 
-                                        replacestr = replacestr.Replace("ADV", "LIO " + tempint.ToString());
+                                        replacestr = replacestr.Replace("ADV", "LI0 " + tempint.ToString());
                                         File.WriteAllLines(outputname + ".pin", arrLine, Encoding.Default);
 
                                     }
@@ -1195,7 +1195,7 @@ namespace vector_merge3
                                         int changeidx = outputstr.LastIndexOf("ADV");
                                         if (changeidx == -1)
                                             continue;
-                                        outputstr = outputstr.Insert(changeidx, "LIO");
+                                        outputstr = outputstr.Insert(changeidx, "LI0");
                                         outputstr = outputstr.Remove(changeidx + 3, 3);
 
                                         string insertstr = arrstr[arrstr.Length - 1].Replace("\t", " ").Replace(";", "");
